@@ -4,6 +4,51 @@ Clasificación del incumplimiento de pago de clientes de tarjetas de crédito ut
 
 Para conocer en detalle las técnicas y metodologías empleadas, consulta el [**informe técnico**](https://github.com/MatteoM95/Default-of-Credit-Card-Clients-Dataset-Analisys/blob/main/Default_of_Credit_Card_Clients.ipynb) o la [**versión web del informe**](https://htmlpreview.github.io/?https://github.com/MatteoM95/Default-of-Credit-Card-Clients-Dataset-Analisys/blob/main/Default_of_Credit_Card_Clients.html).
 
+# Nombre del Proyecto
+
+Breve descripción del problema y del objetivo del proyecto.
+
+## Dataset
+- Fuente de los datos
+- Número de observaciones y variables
+- Variable objetivo
+
+## Objetivo
+Descripción del problema de negocio y del modelo que se busca desarrollar.
+
+## Tecnologías
+- Python
+- Pandas
+- Scikit-learn
+- XGBoost
+- Matplotlib
+- Seaborn
+
+## Metodología
+1. Carga de datos
+2. Análisis exploratorio (EDA)
+3. Preprocesamiento
+4. Ingeniería de características
+5. Entrenamiento de modelos
+6. Optimización de hiperparámetros
+7. Evaluación del modelo
+
+## Resultados
+- Modelo ganador
+- Principales métricas (Accuracy, Precision, Recall, F1, ROC-AUC)
+- Matriz de confusión (opcional)
+
+## Estructura del proyecto
+```text
+├── data/
+├── notebooks/
+├── images/
+├── models/
+├── src/
+├── requirements.txt
+└── README.md
+```
+
 ## Contents:
 
 1.  [Introduction](#introduction)
@@ -100,7 +145,6 @@ El objetivo principal del conjunto de datos es identificar a los clientes que se
 Class distribution
 </p>
  
-
 Como se puede observar, **6,636 de los 30,000 clientes (22.1%)** incumplirán con el pago de su tarjeta de crédito el mes siguiente (es decir, pertenecen a la categoría **1**).
 
 Para obtener una primera visión de cómo se presentan los datos, en la siguiente tabla se muestran algunas observaciones del conjunto de datos. No se registran valores faltantes en ninguna de las variables para las **30,000** observaciones.
@@ -286,30 +330,34 @@ $$
 Boxplot description
 </p>
 
-Furthermore, through them it is possible to detect outliers presence (i.e. the single points), with the following rule: every sample located beyond $Q_1 − 1.5\cdot IQR$ and $Q_3 + 1.5\cdot IQR$ is considered an outlier.
+Además, mediante estos gráficos es posible detectar la presencia de valores atípicos (*outliers*), es decir, observaciones individuales, utilizando la siguiente regla: toda muestra ubicada por debajo de $Q_1 - 1.5 \cdot IQR$ o por encima de $Q_3 + 1.5 \cdot IQR$ se considera un valor atípico.
 
-_Note that for the purpose a normalization was applied on all the attributes to make them have the same scale, otherwise it would have been impossible to compare them._
+_**Nota:** Para este análisis se aplicó una normalización a todos los atributos con el fin de llevarlos a la misma escala; de lo contrario, no habría sido posible compararlos entre sí._
 
-### Min-Max scaling for numerical variables
+### Escalamiento Min-Max para variables numéricas
 
-As mentioned above, input variables may have different units so different scales and magnitude; for this reason before drawing a boxplot, a `MinMaxScaler()` is applied in order to scale the features between a range $(0, 1)$. The basic idea behind this rescaling technique is that for every feature, the minimum value of that feature gets transformed into a 0, the maximum value gets transformed into a 1, and every other value gets transformed into a decimal between 0 and 1.  
-The transformation is given by the following formula:
+Como se mencionó anteriormente, las variables de entrada pueden estar expresadas en diferentes unidades y, por lo tanto, presentar distintas escalas y magnitudes. Por esta razón, antes de generar un diagrama de cajas (*boxplot*), se aplica `MinMaxScaler()` para escalar las características al intervalo $(0, 1)$.
+
+La idea fundamental de esta técnica de reescalamiento es que, para cada característica, el valor mínimo se transforma en 0, el valor máximo en 1 y todos los demás valores se convierten en números decimales comprendidos entre 0 y 1.
+
+La transformación está dada por la siguiente fórmula:
 
 $$ X_{scaled} = \frac{(X - X_{min})}{(X_{max} - X_{min})} $$
 
-where $X_{min}$ is the minimum value on the column and $X_{max}$ is the maximum value on the column.
+donde $X_{min}$ representa el valor mínimo de la columna y $X_{max}$ el valor máximo de la columna.
 
-This transformation is applied on **numerical features** only as the categorical variables has been already transformed into one-hot vectors, that rescale the categorical variable in the range $(0,1)$.
+Esta transformación se aplica **únicamente a las variables numéricas**, ya que las variables categóricas ya fueron transformadas mediante codificación *one-hot* (*one-hot encoding*), lo que las reescala automáticamente al intervalo $(0,1)$.
 
-### Standardization
+### Estandarización
 
-Another possible scaling technique is referred to as **standardization**, which transforms each value $x$ of feature $X$ as follows, independently for each column:
+Otra técnica de escalamiento ampliamente utilizada es la **estandarización**, la cual transforma cada valor $x$ de la característica $X$ de la siguiente manera, de forma independiente para cada columna:
 
 $$ x^{\prime} =\frac{x-\mu_{X}}{\sigma_{X}} $$
 
-where $\mu_{X}$ is the sample mean and $\\sigma_{X}$ is the sample standard deviation of feature $X$. This way, we force each attribute to have a new empirical mean value of 0 and variance 1.
+donde $\mu_{X}$ representa la media muestral y $\sigma_{X}$ la desviación estándar muestral de la característica $X$. De esta manera, se consigue que cada atributo tenga una nueva media empírica igual a 0 y una varianza igual a 1.
 
-_Note that the statistics (e.g. mean and standard deviation for the Standard Scaler) are computed on the training set only, then both datasets are transformed according to them. This is very important as it avoids leaking any information from the test set into the training process, which would be formally incorrect by definition._
+_**Nota:** Las estadísticas utilizadas para el escalamiento (por ejemplo, la media y la desviación estándar en el caso de `StandardScaler`) se calculan **únicamente sobre el conjunto de entrenamiento**. Posteriormente, tanto el conjunto de entrenamiento como el de prueba se transforman utilizando dichas estadísticas. Este procedimiento es fundamental, ya que evita la **fuga de información (*data leakage*)** desde el conjunto de prueba hacia el proceso de entrenamiento, lo cual sería metodológicamente incorrecto._
+
 ```python 
 from sklearn.preprocessing import StandardScaler
 scaler = StandardScaler() \# or MinMaxScaler()
@@ -321,20 +369,20 @@ X_test = scaler.transform(X_test)
 <img height="300" src="https://github.com/MatteoM95/Default-of-Credit-Card-Clients-Dataset-Analisys/blob/main/images/normalized.svg">
 </p>
 <p align = "center">
-Boxplots of numerical features scaled according min-max normalization (left) and standardization (right)
+Diagramas de caja de las variables numéricas escaladas mediante normalización Min-Max (izquierda) y estandarización (derecha).
 </p>
 
-According to the method previously described from the boxplot we can identifty many outliers. It is possible to change the multiplicative coefficient to decide the threshold to overcome to be considered an outlier, but still dubling the coefficent the possible outliers are more than 4000.
+De acuerdo con el método descrito anteriormente, los diagramas de caja permiten identificar una gran cantidad de valores atípicos (outliers). Es posible modificar el coeficiente multiplicativo que determina el umbral a partir del cual una observación se considera un valor atípico; sin embargo, incluso al duplicar dicho coeficiente, se siguen identificando más de 4 000 posibles valores atípicos.
 
-Due to the lack of domain knowledge and the very high number of identifiable outliers, no samples have been discarded as outliers.
+Debido a la falta de conocimiento específico del dominio y al elevado número de valores atípicos detectados, se decidió no eliminar ninguna observación del conjunto de datos.
 
-## Data Preprocessing
+## Preprocesamiento de los datos
 
-### One-hot encoding for categorical variables
+### Codificación One-Hot para variables categóricas
 
-An integer encoding may impose some ordinal relationship between categorical variables that does not exist, for this reason a **one-hot encoding** is performed. Categorical variable such as `SEX`, `MARRIAGE` and `EDUCATION` are turned into one-hot variables in order to remove any orders that in this case have no meaning.
+La codificación mediante valores enteros puede imponer una relación ordinal entre variables categóricas que en realidad no existe. Por esta razón, se aplica una **codificación One-Hot**. Las variables categóricas, como `SEX`, `MARRIAGE` y `EDUCATION`, se transforman en variables binarias para eliminar cualquier orden implícito que, en este caso, carece de significado.
 
-A one hot encoding is a representation of categorical variables as binary vectors. This first requires that the categorical values be mapped to integer values. Then, each integer value is represented as a binary vector that is all zero values except the index of the integer, which is marked with a 1.
+La codificación One-Hot representa las variables categóricas mediante vectores binarios. Para ello, primero cada categoría se asigna a un valor entero. Posteriormente, cada uno de estos valores enteros se convierte en un vector binario compuesto únicamente por ceros, excepto en la posición correspondiente a la categoría, donde se asigna un valor de 1.
 
 |     | SEX | EDUCATION_1 | EDUCATION_2 | EDUCATION_3 | EDUCATION_4 | MARRIAGE_1 | MARRIAGE_2 | MARRIAGE_3 | LIMIT_BAL | ... | BILL_AMT4 | BILL_AMT5 | BILL_AMT6 | PAY_AMT1 | PAY_AMT2 | PAY_AMT3 | PAY_AMT4 | PAY_AMT5 | PAY_AMT6 | Default |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -600,7 +648,7 @@ params = {'C': [0.0001, 0.001, 0.01, 0.1, 1, 10]}
 #Best configuration found C=0.01
 #Data prepocessing: PCA+SMOTE
 ```
-
+    
 As a result, the output of a Logistic Regression model is the probability of the input sample to be of class 1, hence a confidence measure is also returned when predictions are performed. On top of this, the coefficients returned by the algorithm may give interpretable insights on what attributes are contributing the most to a higher output value, and viceversa.
 
 ### Decision Tree
@@ -682,10 +730,13 @@ $$ s.t.:\\\ y_{i}\\left( w^{T} x_{i} +b\\right) \\geqslant 1-\\xi_{i} \ ,\ \\for
 
 $$\\xi_{i} \\geqslant 0\ ,\ \\forall i\\\ $$
 
-Where $\xi$ is a slack variable which is introduced to in order to soften the misclassification constraint, allowing the model to make a certain number of mistakes and letting the margin to remain as wide as possible. The amount of misclassification allowed is controlled by the hyperparameter $C$ which regulates the strength of the Hinge Loss term introduced: a higher $C$ will lead to a stronger minimization of the hinge loss (forcing training points to be more correctly classified), while a lower $C$ imposes a harder regularization (allowing more missclassifications) leading to a larger margin.  
-The Lagrangian Dual Problem is as follows:
+Donde $\xi$ es una **variable de holgura (*slack variable*)**, introducida para suavizar la restricción de clasificación, permitiendo que el modelo cometa un cierto número de errores y mantenga el margen lo más amplio posible.
 
-**Dual Optimization Problem (Soft Margin)**
+La cantidad de clasificaciones erróneas permitidas está controlada por el hiperparámetro $C$, el cual regula la intensidad del término de **pérdida Hinge (*Hinge Loss*)** incorporado al modelo. Un valor elevado de $C$ conduce a una mayor minimización de la pérdida Hinge, obligando a que las observaciones de entrenamiento sean clasificadas correctamente. Por el contrario, un valor reducido de $C$ impone una regularización más fuerte, permitiendo un mayor número de errores de clasificación y dando lugar a un margen de mayor amplitud.
+
+El **problema dual de Lagrange** se define de la siguiente manera:
+
+**Problema dual de optimización (Soft Margin)**
 
 $$ \underset{\alpha}{max} \ \ \sum_{i}^{n} \alpha_{i} -\tfrac{1}{2}\sum_{i,j} \alpha_{i} \alpha_{j} y_{i} y_{j}\left( x_{i}^{T} x_{j}\right) $$
 
