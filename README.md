@@ -691,29 +691,37 @@ $$ \underset{\alpha}{max} \ \ \sum_{i}^{n} \alpha_{i} -\tfrac{1}{2}\sum_{i,j} \a
 
 $$ s.t.: \\ \sum \alpha_{i} y_{i} =0\ \ \land \ 0\leqslant \alpha_{i} \leqslant C,\ \forall i $$
 
-By solving the dual problem (e.g. through Quadratic Programming) we find $$w = \sum_{i}^{n} \alpha_{i} y_{i} x_{i}$$ as a linear combination of the training data. In particular, only the points that are in between (or exactly on) the margin will have an $\\alpha_{i}\\neq0$, i.e. only the so called support vectors are affecting the decision function. The latter can be then also denoted as $sign\(\sum \alpha_{i} y_{i} \( x^{T}_{i} x\)+b \)$, with $x$ a generic test observation. Note how in the soft margin version the number of support vectors found is generally much higher.
+Al resolver el problema dual (por ejemplo, mediante **Programación Cuadrática**), se obtiene $$w = \sum_{i}^{n} \alpha_{i} y_{i} x_{i}$$ es decir, el vector $w$ se expresa como una combinación lineal de los datos de entrenamiento. En particular, únicamente los puntos que se encuentran sobre el margen o dentro de él tendrán un valor $\alpha_i \neq 0$; es decir, solo los denominados **vectores de soporte (support vectors)** influyen en la función de decisión. Esta última también puede expresarse como $$\operatorname{sign}\left(\sum \alpha_{i} y_{i} (x_i^{T}x) + b\right)$$ donde $x$ representa una observación de prueba cualquiera. Cabe destacar que, en la versión de **margen suave (soft margin)**, el número de vectores de soporte encontrados suele ser considerablemente mayor.
 
-Starting from these assumptions, the SVM model can still be generalized to multiclass classification and **non-linearly separable classes**. Indeed, as for the second case, classes may follow a non-linear pattern and a hyperplane may not be the best fit for explaining our data. However, the given dataset might still be linearly separable when mapped onto a higher-dimensional space by a non-linear function phi, such that the training points are transformed as $x_{i} \\in \\mathbb{R}^{d} \\mapsto \\varphi ( x_{i}) \\in \\mathbb{R}^{d^{\\prime}} ,\ d^{\\prime}>d$.
+A partir de estos fundamentos, el modelo **SVM** puede extenderse tanto a problemas de **clasificación multiclase** como a **clases no linealmente separables**. En este último caso, las clases pueden seguir un patrón no lineal, por lo que un hiperplano puede no ser la mejor alternativa para representar los datos. Sin embargo, el conjunto de datos puede llegar a ser linealmente separable al proyectarlo en un espacio de mayor dimensión mediante una función no lineal $\varphi$, de modo que las observaciones de entrenamiento se transforman como $$x_i \in \mathbb{R}^{d} \mapsto \varphi(x_i) \in \mathbb{R}^{d'}, \qquad d' > d$$.
 
-While it is possible to compute the SVM algorithm in a higher space through a feature map , a different trick is instead practically used which exploits a nice property of support vector machines. Indeed, note that the dual optimization problem and the newly defined decision function solely depend on the scalar product between the various points at all times. Whenever this property is satisfied then no matter what the higher-dimensional space is, all that it’s needed is a function able to compute the scalar products in the new transformed space.
+Aunque es posible aplicar el algoritmo **SVM** directamente en este espacio de mayor dimensión utilizando una transformación de características (*feature map*), en la práctica se emplea un enfoque diferente que aprovecha una propiedad fundamental de las máquinas de vectores de soporte. En efecto, tanto el problema de optimización dual como la función de decisión dependen únicamente del **producto escalar** entre las observaciones. Siempre que esta propiedad se mantenga, no es necesario conocer explícitamente el espacio de mayor dimensión; basta con disponer de una función capaz de calcular el producto escalar en dicho espacio transformado.
 
-We then introduce the notion of a Kernel function $K$, defined as:
+Con este propósito, se introduce el concepto de **función kernel** $K$, definida como:
 
 $$ K\ :\ \\mathcal{X} \\times \\mathcal{X}\\rightarrow \ \\mathbb{R}\\\ ( x,\ x^{\\prime} ) \\mapsto K( x,\ x^{\\prime} ):=\\varphi ( x)^{T} \\varphi ( x^{\\prime} ) $$
 
-for some feature map $\\phi$. Then, we can simply apply different kernel functions to the SVM algorithm without directly knowing what the feature transformation is. The power of this approach relies on the Mercer’s Theorem, which gives a sufficient condition for a function to be a Kernel for some unknown $\\varphi ( \\cdot )$.
+para alguna función de transformación de características $\phi$. De esta manera, es posible aplicar diferentes funciones **kernel** al algoritmo **SVM** sin conocer explícitamente cuál es la transformación de características utilizada.
 
-Common Kernel functions used are:
+La eficacia de este enfoque se fundamenta en el **Teorema de Mercer**, el cual proporciona una condición suficiente para que una función sea un **kernel** asociado a alguna transformación desconocida $\varphi(\cdot)$.
+
+Las funciones **kernel** más utilizadas son:
 
 * Linear Kernel: $K( x,x^{\\prime} ) =x^{T} x^{\\prime}$
 * Gaussian RBF Kernel: $K(x,x^{\\prime} )\ =\ \\exp (-\\gamma \\| x-x^{\\prime} \\| ^{2} ),\ \\gamma >0$
 * Polynomial Kernel: $K( x,x^{\\prime} ) \ =\ \\left( x^{T} x^{\\prime} +c\\right)^{d}$
 
-In particular, for the Gaussian RBF Kernel the decision function is computing a similarity measure between the test point and the support vectors (weigthed by $\\alpha\_i$ and $y\_i$), which is inversely proportional to the euclidean distance of the two, leading to an output label that is determined by the closest support vectors. The new hyperparameter gamma can be tuned to regulate how many support vectors are significantly affecting the decision function (usually set to auto: $1/n\\\_features$ or scale: $1/\(n\\\_features*X.var()\)$.
+En particular, para el **kernel Gaussiano RBF**, la función de decisión calcula una medida de similitud entre la observación de prueba y los vectores de soporte (ponderada por $\alpha_i$ y $y_i$), la cual es inversamente proporcional a la distancia euclidiana entre ambos. Como resultado, la etiqueta predicha está determinada por los vectores de soporte más cercanos. El nuevo hiperparámetro **gamma** puede ajustarse para regular cuántos vectores de soporte influyen significativamente en la función de decisión (generalmente se establece como **auto**: $1/n\_features$ o **scale**: $1/(n\_features \times X.var())$).
 
-The decision function then becomes $sign\(\\sum \\alpha_{i} y_{i}K(x_{i},x)+b\)$. Finally note that while it is convenient to use a kernel function, the hyperplane in higher space is not actually computed when the kernel trick is applied, i.e. the coefficients of the vector $w$ are unknown.
+La función de decisión queda definida como:
 
-In this study, both the linear and the gaussian RBF Kernels have been tried. The regularization parameter $C$ has been hypertuned to find the best performing model on the training set.
+$$
+\operatorname{sign}\left(\sum \alpha_{i} y_{i} K(x_{i}, x) + b\right).
+$$
+
+Finalmente, cabe destacar que, aunque resulta conveniente utilizar una función kernel, el hiperplano en el espacio de mayor dimensión no se calcula explícitamente cuando se aplica el **truco del kernel (kernel trick)**; es decir, los coeficientes del vector $w$ permanecen desconocidos.
+
+En este estudio se evaluaron tanto el **kernel lineal** como el **kernel Gaussiano RBF**. Asimismo, el hiperparámetro de regularización $C$ fue optimizado mediante ajuste de hiperparámetros para encontrar el modelo con el mejor desempeño sobre el conjunto de entrenamiento.
 
 ```python
 #Best configuration found 
@@ -730,30 +738,32 @@ params = {'C': 1, 'kernel': 'rbf'}
 | SVM POLY + Cluster Centroids | 0.68 | 0.18 | 0.29 |
 | SVM RBF + Cluster Centroids | 0.58 | 0.46 | 0.51 |
 
-_Scores on validation for the best configuration found with both kernels and both preprocessing techniques_
+_Puntuaciones obtenidas en el conjunto de validación para la mejor configuración encontrada con ambos kernels y ambas técnicas de preprocesamiento_
 
-* the score obtained are quite similar indipendently from the preprocessing technique (SMOTE is a little bit better);
-* with a polinomial kernel in general the recall on positive class is lower than all the other cases;
-* the gaussian version of the SVM outperforms the polinomial one.
+* Las métricas obtenidas son muy similares independientemente de la técnica de preprocesamiento utilizada, aunque **SMOTE** presenta un rendimiento ligeramente superior.
+* En general, al utilizar un **kernel polinómico**, el **recall** de la clase positiva es inferior al obtenido en los demás casos.
+* La versión de **SVM con kernel gaussiano (RBF)** supera en rendimiento a la versión con **kernel polinómico**.
 
-In conclusion, also in this case the results should be improved in order to get more accurate prediction on default credit card clients.
+En conclusión, también en este caso los resultados podrían mejorarse para obtener predicciones más precisas de los clientes que incumplirán con el pago de su tarjeta de crédito.
 
-## Results
+## Resultados
 
-The following barplot displays a summary of results in the training-validation phase where all the algorithms are trained with their best hyperparameters (i.e. the ones that maximize the f1-score on positive class), with both techniques presented to overcome class imbalancing problem. ![](https://github.com/MatteoM95/Default-of-Credit-Card-Clients-Dataset-Analisys/blob/main/images/results.png)
+El siguiente gráfico de barras presenta un resumen de los resultados obtenidos durante la fase de entrenamiento y validación, en la que todos los algoritmos fueron entrenados utilizando sus mejores hiperparámetros (es decir, aquellos que maximizan el **F1-score** para la clase positiva), empleando ambas técnicas propuestas para abordar el problema del desbalance de clases.
 
-_Comparison of F1-score with different algorithms_
+![](https://github.com/MatteoM95/Default-of-Credit-Card-Clients-Dataset-Analisys/blob/main/images/results.png)
 
-### Discussion
+_Comparación del F1-score entre diferentes algoritmos_
 
-* Logistic Regression and Support Vector Machines maintain the same performance regardless the imbalancing techniques used, while this is not true for Random Forest, the reason might be that a decision tree to perform well needs lot of data but at the same time undersampling technique reduce the amount of data.
-* Overall, oversampling slightly outperforms undersampling;
-* The positive class is the most difficult to classify and none of the models chosen seems to be not able to get the complexity of the problem.
-* Empirically has been observed that in general undersampling require more time with respect to oversampling as preprocessing step, this is likely since the first one compute a k-means over all data to find centroids.
+### Discusión
 
-All the above mentioned algorithms have been tried out and hypertuned on the training set with a k-fold cross validation technique. The best performing configurations of hyperparameters on the training set have been chosen for rebuilding the models and evaluating them on the test set.
+* La **Regresión Logística** y las **Máquinas de Vectores de Soporte (Support Vector Machines, SVM)** mantienen el mismo rendimiento independientemente de la técnica utilizada para tratar el desbalance de clases. En cambio, esto no ocurre con **Random Forest**, probablemente porque los árboles de decisión requieren una gran cantidad de datos para lograr un buen desempeño, mientras que la técnica de submuestreo (*undersampling*) reduce la cantidad de datos disponibles para el entrenamiento.
+* En términos generales, las técnicas de **sobremuestreo (*oversampling*)** obtienen un rendimiento ligeramente superior al de las técnicas de **submuestreo (*undersampling*)**.
+* La **clase positiva** es la más difícil de clasificar y ninguno de los modelos seleccionados parece ser capaz de capturar completamente la complejidad del problema.
+* De forma empírica, se observó que el **submuestreo (*undersampling*)** requiere, en general, más tiempo de procesamiento que el **sobremuestreo (*oversampling*)** durante la etapa de preprocesamiento. Esto probablemente se deba a que el primero ejecuta el algoritmo **k-means** sobre todo el conjunto de datos para calcular los centroides.
 
-Finally, the table below the results of all the classifiers (in their best configuration) on validation and test set are compared. As we can see, the score obtained on the test set are pretty close to the one obtained in validation.
+Todos los algoritmos mencionados anteriormente fueron entrenados y optimizados mediante una técnica de **validación cruzada k-fold** utilizando el conjunto de entrenamiento. Las configuraciones de hiperparámetros que obtuvieron el mejor desempeño durante esta etapa fueron seleccionadas para reconstruir los modelos y evaluarlos posteriormente sobre el conjunto de prueba.
+
+Finalmente, en la siguiente tabla se comparan los resultados obtenidos por todos los clasificadores (utilizando su mejor configuración de hiperparámetros) tanto en el conjunto de validación como en el conjunto de prueba. Como puede observarse, las métricas obtenidas en el conjunto de prueba son muy similares a las alcanzadas durante la fase de validación.
 
 | Algorithm | Validation Accuracy | Validation F1-score | Test Accuracy | Test F1-score |
 | --- | --- | --- | --- | --- |
@@ -770,13 +780,19 @@ Finally, the table below the results of all the classifiers (in their best confi
 _LR: Logistic Regression, RF: Random Forest, SVM: Support Vector Machines,  
 OS: Oversampling (SMOTE), US: Undersampling (Cluster Centroids)_
 
-_Note that the scores obtained on the test should never be treated as additional information to change how the training is performed, but only as a final evaluation of the model._
+_**Nota:** Las métricas obtenidas sobre el conjunto de prueba nunca deben utilizarse como información adicional para modificar el proceso de entrenamiento del modelo. Su único propósito es realizar una evaluación final e imparcial de su desempeño._
 
-## Conclusions
+## Conclusiones
 
-In this study different supervised learning algorithms have been inspected and presented with their mathematical details, and finally used on the UCI dataset to build a classification model that is able to predict if a credit card clients will default in the next month. Data preprocessing makes algorithms perform slightly better than when trained with original data: in particular, PCA results are approximately the same, but the computational cost has been lowered. Oversampling and undersampling techniques has been combined with PCA to assess the dataset imbalance problem. Oversampling as mentioned performed slightly better w.r.t. the undersampling, this is likely because the model is trained on a large amount of data. However, all the models implemented achieved comparable results in terms of accuracy.
+En este estudio se analizaron e implementaron diferentes algoritmos de aprendizaje supervisado, presentando además sus fundamentos matemáticos, para construir un modelo de clasificación capaz de predecir si un cliente incumplirá con el pago de su tarjeta de crédito el mes siguiente utilizando el conjunto de datos de UCI.
 
-### References
+El preprocesamiento de los datos permitió mejorar ligeramente el rendimiento de los algoritmos en comparación con el uso de los datos originales. En particular, la aplicación de **PCA** produjo resultados muy similares a los obtenidos sin reducción de dimensionalidad, pero con un menor costo computacional.
+
+Asimismo, se combinaron técnicas de sobremuestreo (*oversampling*) y submuestreo (*undersampling*) con PCA para abordar el problema del desbalance del conjunto de datos. Como se esperaba, las técnicas de sobremuestreo obtuvieron un desempeño ligeramente superior al submuestreo, probablemente porque permiten entrenar los modelos con una mayor cantidad de observaciones.
+
+En general, todos los modelos implementados alcanzaron resultados comparables en términos de exactitud (*accuracy*).
+
+### Referencias
 
 \[1\] Default of credit card clients Data Set: UCI dataset [link](https://archive.ics.uci.edu/ml/datasets/default+of+credit+card+clients)  
   
