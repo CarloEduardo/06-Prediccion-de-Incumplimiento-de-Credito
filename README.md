@@ -1,4 +1,4 @@
-# Machine learning para la predicción del incumplimiento de pago de clientes de tarjetas de crédito 💳
+# Predicción de Incumplimiento de Credito 💳
 
 Clasificación del incumplimiento de pago de clientes de tarjetas de crédito utilizando el [conjunto de datos de la UCI](https://archive.ics.uci.edu/ml/datasets/default+of+credit+card+clients) y técnicas de aprendizaje automático.
 
@@ -394,49 +394,66 @@ La codificación One-Hot representa las variables categóricas mediante vectores
 
 5 rows × 30 columns
 
-### Feature Scaling
+### Escalado de variables (*Feature Scaling*)
 
-As previously explained, a `MinMaxScaler()` has been already applied to all the numerical features.
+Como se explicó anteriormente, ya se ha aplicado un `MinMaxScaler()` a todas las variables numéricas.
 
-### Train-test split
+### División en conjunto de entrenamiento y prueba (*Train-Test Split*)
 
-The dataset is divided in training set and test set, with the proportion 3:1. Given the imbalance fashion in the original dataset a **stratified sampling** strategy has been applied during the split, so that the proportion of defaulters/non-defaulters clients in each of the final sets would approximately be the same as the initial one. This approach is desirable every time we have a highly _unbalanced dataset_ as in our case.  
-The final split obtained is distributed as follows:
+El conjunto de datos se divide en un **conjunto de entrenamiento** y un **conjunto de prueba**, utilizando una proporción de **3:1**.
+
+Debido al desbalance presente en el conjunto de datos original, durante la división se aplicó una estrategia de **muestreo estratificado (*stratified sampling*)**, de modo que la proporción de clientes incumplidores (*defaulters*) y no incumplidores (*non-defaulters*) se mantuviera aproximadamente igual en ambos conjuntos, respetando la distribución original de la variable objetivo.
+
+Este enfoque es especialmente recomendable cuando se trabaja con **_conjuntos de datos altamente desbalanceados_**, como ocurre en este caso.
+
+La distribución final obtenida es la siguiente:
 
 |     | Non-defaulter | Defaulters | Total |
 | --- | --- | --- | --- |
 | **Training set** | 17246 | 4954 | 22200 |
 | **Test set** | 5750 | 1651 | 7401 |
 
-_Note that the split has been randomly generated but kept the same for all the following methods, in order to to make evaluations statistically meaningful and provide consistent results among the different classifiers._
+_**Nota:** La división del conjunto de datos se generó de forma aleatoria, pero se mantuvo exactamente la misma para todos los métodos evaluados. Esto garantiza que las comparaciones entre los distintos clasificadores sean estadísticamente consistentes y que los resultados obtenidos sean comparables._
+
 ```python
 random_state = 42
 ```
 
-### Dimensionality reduction
+### Reducción de dimensionalidad
 
-As already mentioned above, generally speaking it is not always a good idea to propagate in the algorithms all the samples attributes. The main reasons for which the dimensionality reduction is required are the following:
+Como se mencionó anteriormente, en términos generales no siempre es conveniente utilizar todos los atributos del conjunto de datos para entrenar un modelo. Las principales razones para aplicar una reducción de dimensionalidad son las siguientes:
 
-* high dimensional data may negatively affect the algorithms perfomances (i.e. high computational costs);
-* high dimensionality might lead to poor generalization;
-* can be used for interpretability of the data (e.g. for illustraton purposes).
+- Los datos de alta dimensionalidad pueden afectar negativamente el rendimiento de los algoritmos, incrementando el costo computacional.
+- Un gran número de variables puede reducir la capacidad de generalización del modelo.
+- La reducción de dimensionalidad facilita la interpretación y visualización de los datos.
 
-Moreover different machine learning algorithms suffer from the **_curse of dimensionality_** problem: if there are more features than observations the risk of massively overfitting the model becomes really high. Then, too many dimensions causes every observation in the dataset to appear equidistant from all the other, and this is effectively a problem when used distance-based algorithms (such as K-Nearest Neighbors), because if the distances are all approximately equal, then the observation appear equally alike (as well as equally different), making the algorithm perfomances meaningless.
+Además, muchos algoritmos de aprendizaje automático sufren del problema conocido como la **maldición de la dimensionalidad (*curse of dimensionality*)**. Cuando el número de variables es muy elevado en relación con el número de observaciones, aumenta considerablemente el riesgo de **sobreajuste (*overfitting*)**.
 
-### Feature Selection
+Asimismo, al incrementar el número de dimensiones, las distancias entre las observaciones tienden a volverse muy similares. Esto representa un problema para los algoritmos basados en distancias, como **K-Nearest Neighbors (KNN)**, ya que si todas las distancias son aproximadamente iguales, las observaciones resultan indistinguibles entre sí, reduciendo significativamente la capacidad predictiva del algoritmo.
 
-On top of feature transformation, the data preprocessing phase often includes a feature selection step, where the attributes from the given dataset are carefully analysed and finally selected to feed the machine learning algorithm.  
-As previously seen in the correlation matrix and with scatter plots, some features in this dataset are strongly linearly correlated, so it is not meaningful to keep all of them because they may contain redundant information. In this way, features with a Pearson coefficient $\rho \geqslant 0.92$ with other predictors should be discarded.
+### Selección de variables (*Feature Selection*)
 
-In particular, at this step the following features are removed: `BILL_AMT2`, `BILL_AMT3`, `BILL_AMT4`, `BILL_AMT5`, `BILL_AMT6`.
+Además de la transformación de variables, la etapa de preprocesamiento suele incluir un proceso de **selección de variables**, en el que se analizan los atributos del conjunto de datos para identificar aquellos que aportan información relevante al modelo.
 
-### Principal Component Analysis
+Como se observó previamente en la **matriz de correlación** y en los **gráficos de dispersión**, algunas variables de este conjunto de datos presentan una fuerte correlación lineal entre sí. Mantener todas estas variables no resulta conveniente, ya que contienen información redundante.
 
-Another way to obtain a lower dimensional dataset when dealing with multicollinearity among features, is by applying a Principal Component Analysis (PCA) to our data.
+Por ello, se eliminaron aquellas variables cuyo coeficiente de correlación de Pearson cumplía la condición:
 
-PCA is an **unsupervised learning** technique that performs a linear transformation (by means of an orthogonal matrix) of the original space such that the new basis found has dimensions (features) that are sorted from largest to smallest possible variance.
+\[
+\rho \geq 0.92
+\]
 
-The intuition behind this approach lies in the fact that if the direction of maximum variance in the original space is not directly captured by the features in the dataset, then that direction might be used to construct a new feature that has a larger variance, hence probably encoding more information. Therefore, the following minimization problem is performed for finding the direction of maximum variance:  
+En particular, se eliminaron las siguientes variables: `BILL_AMT2`, `BILL_AMT3`, `BILL_AMT4`, `BILL_AMT5`, `BILL_AMT6`.
+
+### Análisis de Componentes Principales (*Principal Component Analysis, PCA*)
+
+Otra forma de obtener un conjunto de datos de menor dimensionalidad cuando existe **multicolinealidad** entre las variables es mediante la aplicación del **Análisis de Componentes Principales (PCA)**.
+
+El PCA es una técnica de **aprendizaje no supervisado** que realiza una transformación lineal del espacio de variables originales mediante una **matriz ortogonal**, con el objetivo de obtener un nuevo conjunto de componentes ordenados de acuerdo con la cantidad de varianza que explican, desde la mayor hasta la menor.
+
+La intuición detrás de este método es que, si la dirección de máxima variabilidad de los datos no está representada directamente por las variables originales, es posible construir nuevas variables (componentes principales) que capturen esa variabilidad de manera más eficiente. En consecuencia, estos nuevos componentes suelen contener una mayor cantidad de información relevante que las variables originales consideradas de forma individual.
+
+Para encontrar la dirección que maximiza la varianza de los datos, se resuelve el siguiente problema de optimización:
   
 $$ X\in \mathbb{R}^{n\times d} , dataset\ centered\ in\ zero $$
 
@@ -446,17 +463,19 @@ $$ find\ \ \overrightarrow{z_{1}} :=a_{1} \overrightarrow{e_{1}} +...+a_{d}\over
 
 $$ s.t.: \ \ \overrightarrow{z_{1}} =\underset{\vec{z}{1}}{argmax} \ \ \vec{z_{1}}^{T} \ \Sigma \ \ \vec{z_{1}} , \ \ \ \Vert \vec{z_{1}}\Vert =1 $$
 
-Recursively, all other dimensions are then computed in the same way, additionally forcing them to be orthogonal to the previous dimensions found. The new features $z_{i}$ are denoted as **principal components** (PCs).
+De forma recursiva, las demás dimensiones se calculan siguiendo el mismo procedimiento, imponiendo además la restricción de que cada nueva dimensión sea **ortogonal** a las previamente obtenidas. Estas nuevas variables se conocen como **componentes principales** (*Principal Components, PCs*).
 
-The above optimization problem can be easily proved to be equivalent to computing the eigendecomposition of $\Sigma$ and selecting its eigenvectors as the principal components, which is the way PCA is executed in practice. In particular, being $\Sigma$ a symmetric positive semidefinite matrix, it is always possible to diagonalize it by means of an orthogonal matrix $P$ (eigenvectors of $\Sigma$), and obtain the resulting similar matrix $\Lambda$:  
+Puede demostrarse que el problema de optimización descrito anteriormente es equivalente a calcular la **descomposición en valores propios (eigendecomposition)** de la matriz de covarianzas $\Sigma$ y seleccionar sus **vectores propios (eigenvectors)** como componentes principales, que es precisamente el procedimiento utilizado en la práctica para implementar el PCA.
+
+En particular, dado que $\Sigma$ es una **matriz simétrica semidefinida positiva**, siempre es posible diagonalizarla mediante una matriz ortogonal $P$, cuyos vectores columna corresponden a los vectores propios de $\Sigma$. Como resultado, se obtiene la siguiente matriz diagonal $\Lambda$:
  
 $$ \Lambda =\ \begin{pmatrix} \lambda_{1} & 0 & \cdots & 0\\\ 0 & \lambda_{2} & \ddots & \vdots \\\ \vdots & \ddots & \ddots & 0\\\ 0 & \cdots & 0 & \lambda_{d} \end{pmatrix} \ ,\ \lambda_{1} \geqslant \lambda_{2} \geqslant ...\geqslant \lambda_{d} \geqslant 0,\ \lambda_{i} \in \mathbb{R}^{+} $$
 
-where $\lambda_{i}$ are the eigenvalues of $\Sigma$, or equivalently the variances of the new features found. Note that, since $\Sigma$ and $\Lambda$ are similar matrices, they have the same trace, meaning that the initial total variance among the features of the dataset is not changing but it is just getting redistributed on new axes (which is expected as all we are doing is just a rigid rotation of the space). In particular, we can compute the variance explained by each new principal component with respect to the total variance of the dataset.
+donde $\lambda_{i}$ son los valores propios (*eigenvalues*) de $\Sigma$, o de manera equivalente, las varianzas de las nuevas características obtenidas. Nótese que, dado que $\Sigma$ y $\Lambda$ son matrices semejantes, ambas tienen la misma traza, lo que significa que la varianza total inicial de las características del conjunto de datos no cambia, sino que simplemente se redistribuye sobre nuevos ejes (lo cual es de esperarse, ya que únicamente se está realizando una rotación rígida del espacio). En particular, podemos calcular la proporción de varianza explicada por cada nuevo componente principal con respecto a la varianza total del conjunto de datos.
 
-Finally note that $\Lambda$ is now the covariance matrix in the new basis found, and since it’s diagonal all new features result to be linearly uncorrelated. We can then select only a subset of the first principal components in order to reduce the initial dimensionality of the dataset with minimal information loss.
+Finalmente, observe que $\Lambda$ es ahora la matriz de covarianza en la nueva base obtenida y, al ser una matriz diagonal, todas las nuevas características resultan ser linealmente incorrelacionadas. Por ello, es posible seleccionar únicamente un subconjunto de los primeros componentes principales para reducir la dimensionalidad inicial del conjunto de datos con una pérdida mínima de información.
 
-In this study, PCA has been performed on the Credit card dataset to deal with the multicollinearity problem and reduce the number of dimensions. The following figure shows how the variance has been redistributed on the new features extracted.
+En este estudio, se aplicó el Análisis de Componentes Principales (PCA) al conjunto de datos de **Default de Tarjetas de Crédito** con el fin de abordar el problema de la multicolinealidad y reducir el número de dimensiones. La siguiente figura muestra cómo se ha redistribuido la varianza entre las nuevas características extraídas.
 
 <p align = "center">
 <img height="300" src="https://github.com/MatteoM95/Default-of-Credit-Card-Clients-Dataset-Analisys/blob/main/images/PCACumulative.svg">
@@ -466,9 +485,9 @@ Explained variance ratio of each principle component, together with the
 cumulative variance explained as more dimensions are considered.
 </p>
 
-The graph above is relative to the **proportion of explained variance**: the green line represents the proportion of variance explained by each principal component. While the orange line instead is the cumulative amount of proportion of variance explained (i.e. the sum of the single variance explained by the principal components on the left).
+El gráfico anterior muestra la **proporción de varianza explicada** por los componentes principales. La línea verde representa la proporción de varianza explicada por cada componente principal de forma individual, mientras que la línea naranja muestra la **proporción de varianza explicada acumulada**, es decir, la suma de la varianza explicada por los componentes principales anteriores.
 
-This graph is useful to take decision regarding the number of components to keep. The following table report some interesting values for the number of components.
+Este gráfico resulta útil para decidir cuántos componentes principales conservar. La siguiente tabla presenta algunos valores de interés relacionados con el número de componentes seleccionados.
 
 | Number of PCs | Cumulative Variance Explained |
 | --- | --- |
@@ -477,9 +496,10 @@ This graph is useful to take decision regarding the number of components to keep
 | 8   | 97.1 % |
 | 12  | 99.0 % |
 
-For example, the first 12 PCs are able to capture almost the whole variance (99%) of the data points and for this reason we decided to keep these number.
+Por ejemplo, los primeros **12 componentes principales (PCs)** son capaces de capturar aproximadamente el **99 % de la varianza total** del conjunto de datos. Por esta razón, se decidió conservar únicamente estos 12 componentes para el análisis posterior.
 
-_Note that PCA is applied based only on the training data in order to avoid any leaking the information of test data._
+_**Nota:** El PCA se ajusta únicamente utilizando el conjunto de entrenamiento para evitar la fuga de información (*data leakage*) desde el conjunto de prueba hacia el proceso de entrenamiento del modelo._
+
 ``` python
 from sklearn.decomposition import PCA
 
@@ -495,23 +515,26 @@ pca.fit(X_train) # not on the whole dataset
 | 3   | -0.52 | -0.38 | 0.93 | -0.31 | 0.71 | -0.10 | 0.09 | -7.04e-02 | 2.04e-02 | -0.09 | -0.05 | 3.32e-03 |
 | 4   | -1.07 | -0.25 | -0.30 | -0.23 | 0.24 | 0.39 | -0.03 | -9.61e-03 | 3.43e-02 | -0.20 | 0.11 | -1.48e-04 |
 
-### Oversampling and undersampling
+### Sobremuestreo y submuestreo
 
-When dealing with significantly **unbalanced dataset** in the target label, it becomes harder for most machine learning algorithms to efficiently learn all classes. The training process might be indeed biased towards a certain class if the dataset distribution is poorly balanced.
+Cuando se trabaja con un **conjunto de datos desbalanceado** en la variable objetivo, resulta más difícil para la mayoría de los algoritmos de aprendizaje automático aprender de manera eficiente todas las clases. En efecto, el proceso de entrenamiento puede sesgarse hacia una determinada clase si la distribución del conjunto de datos está fuertemente desequilibrada.
 
-In the specific case of the credit card clients, only about 22.1% of the data are labelled as defaulters (y=1).
+En el caso específico del conjunto de datos de clientes de tarjetas de crédito, solo alrededor del **22,1 %** de las observaciones están etiquetadas como clientes en incumplimiento (*defaulters*, `y = 1`).
 
 |     | Number of rows | Percentage |
 | --- | --- | --- |
 | Non-defaulters (class=0) | 17246 | 77.68 % |
 | Defaulters (class=1) | 4954 | 22.32 % |
 
-While the obvious and most desirable solution would be to collect more real data, _oversampling_ and _undersampling_ are techniques that may still come in handy in these situations.  
-For both techniques there is a naïve approach that is the **_random oversampling (undersampling)_** where training data is incremented (decremented) with multiple copies of the samples, until the same proportion is obtained on the minority (majority) classes.
+Si bien la solución más evidente y deseable sería recopilar más datos reales, las técnicas de **sobremuestreo (_oversampling_)** y **submuestreo (_undersampling_)** pueden ser de gran utilidad en este tipo de situaciones.
 
-### Oversampling: Synthetic Minority Over-sampling Technique (SMOTE)
+Para ambas técnicas existe un enfoque básico conocido como **sobremuestreo (o submuestreo) aleatorio (_random oversampling/undersampling_)**, en el cual el conjunto de entrenamiento se incrementa (o reduce) mediante copias aleatorias de las observaciones hasta obtener la misma proporción entre la clase minoritaria y la clase mayoritaria.
 
-With SMOTE algorithm the minority class is augmented artificially, by constructing new synthetic samples randomly positioned in between one point and its k-neighbors. In other words, given a limited set of data points that belong to the class that we wish to augment, we trace high-dimensional lines connecting the data points and we draw new samples from such lines.  
+### Sobremuestreo: Técnica de Sobremuestreo Sintético de la Clase Minoritaria (SMOTE)
+
+El algoritmo **SMOTE (Synthetic Minority Over-sampling Technique)** incrementa artificialmente la clase minoritaria mediante la generación de nuevas muestras sintéticas, ubicadas aleatoriamente entre una observación y sus *k* vecinos más cercanos.
+
+En otras palabras, dado un conjunto limitado de observaciones pertenecientes a la clase que se desea aumentar, el algoritmo traza líneas en el espacio de características de alta dimensión que conectan dichas observaciones y genera nuevas muestras sintéticas a lo largo de esas líneas.
 
 <p align = "center">
 <img src="https://github.com/MatteoM95/Default-of-Credit-Card-Clients-Dataset-Analisys/blob/main/images/oversampling-smote.png?raw=true">
@@ -520,7 +543,7 @@ With SMOTE algorithm the minority class is augmented artificially, by constructi
 Example of SMOTE application on a small dataset
 </p>
   
-Finally, note that a synthetic sample should never be used as a test sample, since it has technically never appeared in the real world and hence not formally belonging to the target distribution. Also, the stratified test set is believed to be the correct representation of the real world, and augmenting a part of it would lead to a misleading evaluation.
+Por último, es importante señalar que una muestra sintética **nunca debe utilizarse como muestra de prueba (test)**, ya que técnicamente nunca ha existido en el mundo real y, por lo tanto, no pertenece formalmente a la distribución objetivo. Además, se considera que el conjunto de prueba estratificado representa correctamente la distribución del mundo real, por lo que aumentar artificialmente una parte de este conduciría a una evaluación sesgada y poco representativa.
 
 ``` python
 from imblearn.over_sampling import SMOTE
@@ -536,9 +559,11 @@ y_pred = clf.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
 ```
 
-### Undersampling: Cluster Centroids
+### Submuestreo: Cluster Centroids
 
-Cluster Centroids make use of K-means algorithm to perform undersampling. After finding the cluster centroids on the majority class points, the algorithm selects the instances belonging to the cluster (labelled with the majority class), which are furthest from the cluster centroid in feature space. These data points are considered as the most unimportant instance. On the contrary, the instance belonging to the majority class, that is nearest to the cluster centroid in feature space, is considered to be the most important instance. In this way, instances belonging to the majority class are removed on the basis of their importance.  
+**Cluster Centroids** utiliza el algoritmo **K-means** para realizar el submuestreo de la clase mayoritaria. Tras identificar los centroides de los clústeres formados por las observaciones de dicha clase, el algoritmo selecciona las instancias pertenecientes a cada clúster (etiquetadas con la clase mayoritaria) que se encuentran más alejadas del centroide en el espacio de características. Estas observaciones se consideran las menos representativas o menos importantes.
+
+Por el contrario, la instancia de la clase mayoritaria que se encuentra más próxima al centroide del clúster se considera la más representativa o importante. De esta manera, las instancias de la clase mayoritaria se eliminan en función de su importancia, conservando aquellas que mejor representan la distribución de los datos.
 
 <p align = "center">
 <img height="300" src="https://github.com/MatteoM95/Default-of-Credit-Card-Clients-Dataset-Analisys/blob/main/images/undersampling-cluster_centroids.png?raw=true">
@@ -547,12 +572,15 @@ Cluster Centroids make use of K-means algorithm to perform undersampling. After 
 Example of Cluster Centroids application on a trivial dataset
 </p>
 
-In particular, given two class which has respectively $N$ and $M$ data points with $N \lt M$, the algoritm trains a K-Means on points labelled with the majority class label, with $k = N$, the cardinality of the set of minority data points.  
-Then for each cluster, it replace the data points of the majority class with a new point whose coordinates correspond to the cluster centroid's coordinates. So we undersample majority class by forming clusters and replacing it with cluster centroids.
+En particular, dadas dos clases con respectivamente $N$ y $M$ observaciones, donde $N < M$, el algoritmo entrena un modelo **K-Means** utilizando únicamente los puntos pertenecientes a la clase mayoritaria, con $k = N$, es decir, el número de observaciones de la clase minoritaria.
 
-## Classification algorithms
+Posteriormente, para cada clúster, reemplaza los puntos de la clase mayoritaria por un nuevo punto cuyas coordenadas corresponden al centroide del clúster. De esta manera, se reduce el número de observaciones de la clase mayoritaria formando clústeres y sustituyéndolos por sus centroides.
 
-In this section a description of the algorithms used is presented. For each of them, different hyperparameters are tuned in order to find the ones performing best, and, once found, the model trained with them is used to predict class labels on test data combining different data preprocessing techniques presented above in order to spot some performances differences. The best configuration is selected by comparing the different metrics, principally based on the _f1-score_ because accuracy on unbalance dataset may return an high values even if the minority class is not correcly classified.
+## Algoritmos de clasificación
+
+En esta sección se presenta una descripción de los algoritmos utilizados. Para cada uno de ellos, se ajustan diferentes hiperparámetros con el fin de encontrar la configuración que ofrece el mejor desempeño. Una vez identificada, el modelo entrenado con dicha configuración se utiliza para predecir las etiquetas de clase sobre el conjunto de prueba, combinando las distintas técnicas de preprocesamiento de datos presentadas anteriormente para analizar las diferencias en el rendimiento.
+
+La mejor configuración se selecciona comparando diversas métricas de evaluación, principalmente el **F1-score**, ya que la exactitud (*accuracy*) en conjuntos de datos desbalanceados puede presentar valores elevados incluso cuando la clase minoritaria no se clasifica correctamente.
 
 Each algorithm is trained on dataset with different preprocessing techniques combined:
 
@@ -648,7 +676,7 @@ params = {'C': [0.0001, 0.001, 0.01, 0.1, 1, 10]}
 #Best configuration found C=0.01
 #Data prepocessing: PCA+SMOTE
 ```
-    
+
 As a result, the output of a Logistic Regression model is the probability of the input sample to be of class 1, hence a confidence measure is also returned when predictions are performed. On top of this, the coefficients returned by the algorithm may give interpretable insights on what attributes are contributing the most to a higher output value, and viceversa.
 
 ### Decision Tree
@@ -742,7 +770,7 @@ $$ \underset{\alpha}{max} \ \ \sum_{i}^{n} \alpha_{i} -\tfrac{1}{2}\sum_{i,j} \a
 
 $$ s.t.: \\ \sum \alpha_{i} y_{i} =0\ \ \land \ 0\leqslant \alpha_{i} \leqslant C,\ \forall i $$
 
-Al resolver el problema dual (por ejemplo, mediante **Programación Cuadrática**), se obtiene $$w = \sum_{i}^{n} \alpha_{i} y_{i} x_{i}$$ es decir, el vector $w$ se expresa como una combinación lineal de los datos de entrenamiento. En particular, únicamente los puntos que se encuentran sobre el margen o dentro de él tendrán un valor $\alpha_i \neq 0$; es decir, solo los denominados **vectores de soporte (support vectors)** influyen en la función de decisión. Esta última también puede expresarse como $$\operatorname{sign}\left(\sum \alpha_{i} y_{i} (x_i^{T}x) + b\right)$$ donde $x$ representa una observación de prueba cualquiera. Cabe destacar que, en la versión de **margen suave (soft margin)**, el número de vectores de soporte encontrados suele ser considerablemente mayor.
+Al resolver el problema dual (por ejemplo, mediante **Programación Cuadrática**), se obtiene $$w = \sum_{i}^{n} \alpha_{i} y_{i} x_{i}$$ es decir, el vector $w$ se expresa como una combinación lineal de los datos de entrenamiento. En particular, únicamente los puntos que se encuentran sobre el margen o dentro de él tendrán un valor $\alpha_i \neq 0$; es decir, solo los denominados **vectores de soporte (support vectors)** influyen en la función de decisión. Esta última también puede expresarse como $\operatorname{sign}\left(\sum \alpha_{i} y_{i} (x_i^{T}x) + b\right)$ donde $x$ representa una observación de prueba cualquiera. Cabe destacar que, en la versión de **margen suave (soft margin)**, el número de vectores de soporte encontrados suele ser considerablemente mayor.
 
 A partir de estos fundamentos, el modelo **SVM** puede extenderse tanto a problemas de **clasificación multiclase** como a **clases no linealmente separables**. En este último caso, las clases pueden seguir un patrón no lineal, por lo que un hiperplano puede no ser la mejor alternativa para representar los datos. Sin embargo, el conjunto de datos puede llegar a ser linealmente separable al proyectarlo en un espacio de mayor dimensión mediante una función no lineal $\varphi$, de modo que las observaciones de entrenamiento se transforman como $$x_i \in \mathbb{R}^{d} \mapsto \varphi(x_i) \in \mathbb{R}^{d'}, \qquad d' > d$$.
 
