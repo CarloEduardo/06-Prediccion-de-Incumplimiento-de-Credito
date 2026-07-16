@@ -582,79 +582,107 @@ En esta sección se presenta una descripción de los algoritmos utilizados. Para
 
 La mejor configuración se selecciona comparando diversas métricas de evaluación, principalmente el **F1-score**, ya que la exactitud (*accuracy*) en conjuntos de datos desbalanceados puede presentar valores elevados incluso cuando la clase minoritaria no se clasifica correctamente.
 
-Each algorithm is trained on dataset with different preprocessing techniques combined:
+Cada algoritmo se entrena utilizando distintas combinaciones de técnicas de preprocesamiento de datos:
 
 * Principal Component Analysis (PCA)
 * PCA + SMOTE (oversampling)
 * PCA + Cluster Centroids (undersampling)
 
-The algorithms considered are:
+Los algoritmos considerados son:
 
 * Logistic Regression
 * Random forest (and Decision Trees)
 * SVM (both Linear and RBF)
 
-### Evaluation methods
+## Métodos de evaluación
 
-Even though learning theory guarantees to reach a probably approximately correct model, in practice it is often needed to perform an actual evaluation of the model to check how well it’s performing. This is generally done by splitting the original dataset into two parts, a training set and a test set, so that the model can be trained on the training samples only and be evaluated on previously unseen data. This technique is referred to as **_Holdout_**.
+Aunque la teoría del aprendizaje garantiza que es posible obtener un modelo **probablemente aproximadamente correcto** (*Probably Approximately Correct, PAC*), en la práctica es necesario evaluar su desempeño para comprobar qué tan bien generaliza a nuevos datos.
 
-Instead, **_Cross Validation_** is a resampling method that allows to repeteadly drawing samples from a training set, in order to have a better estimate of the evaluation score used.
+Una forma común de hacerlo consiste en dividir el conjunto de datos original en dos partes: un **conjunto de entrenamiento** (*training set*) y un **conjunto de prueba** (*test set*). El modelo se entrena únicamente con los datos de entrenamiento y posteriormente se evalúa sobre datos que no ha visto previamente. Esta técnica se conoce como **_Holdout_**.
 
-With the cross-validation technique we aim to verify if the model is able predict labels for data points that it hasn't seen so far. The complete dataset is divided into $k$ subsets (folds):
+Por otro lado, la **_Validación Cruzada_** (*Cross Validation*) es un método de remuestreo que permite generar múltiples particiones del conjunto de entrenamiento con el fin de obtener una estimación más robusta del rendimiento del modelo.
 
-* $k-1$ folds will be used to train the model, all togheter compose the _training set_;
-* one fold composes the _validation set_, on which we evaluate the performance of the model.
+Mediante la validación cruzada se busca verificar si el modelo es capaz de predecir correctamente las etiquetas de observaciones que no ha visto durante el entrenamiento. Para ello, el conjunto de datos se divide en $k$ subconjuntos (*folds*):
 
-This operation is repeated $k$ times in order to reduce the variability, and at every round the validation subset changes. At the end, the $k$ estimates of model's predictive performance are averaged.
+* Se utilizan $k-1$ *folds* para entrenar el modelo; en conjunto forman el **conjunto de entrenamiento**.
+* El *fold* restante constituye el **conjunto de validación**, sobre el cual se evalúa el desempeño del modelo.
+
+Este procedimiento se repite **$k$ veces**, de modo que en cada iteración cambia el subconjunto utilizado para la validación. Finalmente, el rendimiento del modelo se obtiene calculando el promedio de las **$k$ evaluaciones**, lo que reduce la variabilidad de la estimación y proporciona una medida más confiable de la capacidad de generalización del modelo.
 
 <p align = "center">
 <img height="300" src="https://upload.wikimedia.org/wikipedia/commons/c/c7/LOOCV.gif">
 </p>
 <p align = "center">
-Example of Cross Validation (k=8) where the red and blue square is used respectively as training and validation set
+Ejemplo de Validación Cruzada (k=8), donde los cuadrados rojos y azules representan, respectivamente, los conjuntos de entrenamiento y validación.
 </p>
 
-The special case where $k$ is equal to $m$, the number of examples, is called _leave-one-out_. This procedures gives a very good estimate of the true error but, on the other side, it computationally expensive.
+El caso particular en el que $k$ es igual a $m$, el número total de observaciones, se conoce como **_Leave-One-Out Cross Validation (LOOCV)_**. Este procedimiento proporciona una muy buena estimación del error real del modelo; sin embargo, su principal desventaja es su elevado costo computacional, ya que requiere entrenar el modelo una vez por cada observación del conjunto de datos.
 
-A combination of holdout and cross validation can be used when also dealing with a validation set (_k-fold cross validation_). So after having divided the dataset in a stratify way into training and test set, the training part is again splitted into training and validation set (even in this case with `stratify=True`).
+También es posible combinar las técnicas de **Holdout** y **Validación Cruzada** mediante el enfoque conocido como **_k-fold Cross Validation_**. En este caso, el conjunto de datos se divide inicialmente, de manera estratificada, en un **conjunto de entrenamiento** y un **conjunto de prueba**. Posteriormente, el conjunto de entrenamiento se vuelve a dividir en subconjuntos de entrenamiento y validación utilizando nuevamente una partición estratificada (`stratify=True`).
 
-### Evaluation metrics
+## Métricas de evaluación
 
-In a classification scenario, the model can be evaluated by computing different metrics. In order to better understand these metrics could be useful to get some fundamentals:
+En un problema de clasificación, el desempeño del modelo puede evaluarse mediante diferentes métricas. Para comprender correctamente estas métricas, es útil revisar primero algunos conceptos fundamentales.
 
 |     | Predicted (1) | Predicted (0) |
 | --- | --- | --- |
 | **Actual (1)** | TP  | FN  |
 | **Actual (0)** | FP  | TN  |
 
-* _True Positive (TP)_: samples for which the prediction is positive and the true class is positive
-* _False Positive (FP)_: samples for which the prediction is positive but the true class is negative
-* _True Negative (TN)_: samples for which the prediction is negative and the true class is negative
-* _False Negative (FN)_: samples for which the prediction is negative but the true class is positive
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+* _Verdadero Positivo (TP)_: muestras para las cuales la predicción es positiva y la clase real también es positiva.
+* _Falso Positivo (FP)_: muestras para las cuales la predicción es positiva, pero la clase real es negativa.
+* _Verdadero Negativo (TN)_: muestras para las cuales la predicción es negativa y la clase real también es negativa.
+* _Falso Negativo (FN)_: muestras para las cuales la predicción es negativa, pero la clase real es positiva.
 
-Some of the most popular metrics are:
+Algunas de las métricas de evaluación más utilizadas son:
 
-* **_Accuracy_**: ratio of correct predictions over the total number of data points classified <br>$Accuracy = \frac{Number\ correctly\ classified\ samples}{total\ number\ of\ samples\ tested}=\frac{TP+TN}{TP+FP+TN+FN}$
+* **_Exactitud (Accuracy)_**: proporción de predicciones correctas respecto al número total de muestras clasificadas.
+  <br>
+  $$
+  Accuracy = \frac{\text{Número de muestras correctamente clasificadas}}{\text{Número total de muestras evaluadas}}
+  = \frac{TP + TN}{TP + FP + TN + FN}
+  $$
 
-* **_Precision_**: measures the fraction of correct classified instances among the ones classified as positive. Precision is an appropriate measure to use when the aim is to minimize _false positives_. <br>$Precision(c) = \frac{ Number\ samples\ correctly\ assigned\ to\ class\ c}{Number\ of\ samples\ assigned\ to\ class\ c}=\frac{TP}{TP+FP}$
+* **_Precisión (Precision)_**: mide la proporción de instancias correctamente clasificadas como positivas entre todas las clasificadas como positivas. Es una métrica adecuada cuando el objetivo es minimizar los **falsos positivos**.
+  <br>
+  $$
+  Precision(c) =
+  \frac{\text{Número de muestras correctamente asignadas a la clase } c}
+  {\text{Número de muestras asignadas a la clase } c}
+  =
+  \frac{TP}{TP + FP}
+  $$
 
-* **_Recall_**: it measures how many of the actual positives a model capture through labelling it as True Positive. It is an appropriate score when the aim is to minimize false negatives <br>$Recall(c) = \frac{Number\ samples\ correctly\ assigned\ to\ class\ c}{Number\ of\ samples\ actually\ belonging\ to\ c}=\frac{TP}{TP+FN}$
+* **_Sensibilidad (Recall)_**: mide cuántos de los casos realmente positivos son identificados correctamente por el modelo. Es una métrica apropiada cuando el objetivo es minimizar los **falsos negativos**.
+  <br>
+  $$
+  Recall(c) =
+  \frac{\text{Número de muestras correctamente asignadas a la clase } c}
+  {\text{Número de muestras que realmente pertenecen a la clase } c}
+  =
+  \frac{TP}{TP + FN}
+  $$
 
-* **_F1-score_**: is the harmonic mean of the precision and recall. <br>$F1-score(c) = \frac{2\cdot precision(c)\cdot recall(c)}{precision(c) +recall( c)}$
+* **_F1-score_**: corresponde a la media armónica entre la precisión y la sensibilidad (_Recall_).
+  <br>
+  $$
+  F1\text{-}score(c) =
+  \frac{2 \cdot Precision(c) \cdot Recall(c)}
+  {Precision(c) + Recall(c)}
+  $$
 
-The last three measures are _class-specific_, and a global metric can be obtained by averaging their values across all classes in the dataset. In particular, class-specific metrics work better when dealing with significantly unbalanced dataset, as they take into account how every class is being learned. Thus, the accuracy measure alone might be misleading in these cases, since may return an high score even if the minority class is not correcly classified.
+Las tres últimas métricas son **específicas por clase (_class-specific_)**, por lo que una métrica global puede obtenerse promediando sus valores entre todas las clases del conjunto de datos. En particular, estas métricas son más adecuadas cuando se trabaja con **conjuntos de datos desbalanceados**, ya que permiten evaluar el desempeño del modelo sobre cada clase de forma independiente. En estos casos, utilizar únicamente la exactitud (_Accuracy_) puede resultar engañoso, ya que es posible obtener un valor elevado incluso cuando la clase minoritaria es clasificada de manera deficiente.
 
-In this analysis we focus our attention in detecting which customer may be defaults clients, and the positive class captures the attention of the classifier. As already mentioned, in the following section the F1-score will be used to find the best configuration for each model.
+En este proyecto, el objetivo principal es identificar a los clientes que podrían incurrir en **incumplimiento de pago (_default_)**, por lo que la **clase positiva** representa el mayor interés para el clasificador. Como se mencionó anteriormente, en las siguientes secciones se utilizará principalmente el **F1-score** para seleccionar la mejor configuración de cada modelo.
 
-## Models
+## Modelos
 
-### Logistic Regression
+### Regresión Logística
 
-Logistic Regression is a parametric, discriminative binary classification algorithm. The name is given after the fact that the algorithm can be interpreted as part of the _Generalized Linear Model_, where the response variables are distributed according to a Bernoulli distribution. In particular, the model assumes the predictors to be linked to the mean of the response variables $p_{i}$ as:
+La **Regresión Logística** es un algoritmo paramétrico y discriminativo para clasificación binaria. Su nombre se debe a que puede interpretarse como parte del **Modelo Lineal Generalizado _(Generalized Linear Model, GLM)_**, donde la variable respuesta sigue una distribución de Bernoulli. En particular, el modelo asume que los predictores están relacionados con la media de la variable respuesta \(p_i\) de la siguiente manera:
 
 $$ observation\ ( x_{i} , y_{i}) \ ,\ y_{i} \ realization\ of\ Y_{i} \sim Bernoulli( p_{i}( x_{i}))$$
-
-$$ log\left(\frac{p_{i}}{1-p_{i}}\right) =w^{T} x_{i} \ \Longleftrightarrow \ p_{i} =\frac{1}{1+e^{-w^{T} x_{i}}} \ ,\ for\ all\ i $$
 
 <p align = "center">
 <img height="300" src="https://upload.wikimedia.org/wikipedia/commons/5/53/Sigmoid-function-2.svg">
@@ -663,11 +691,11 @@ $$ log\left(\frac{p_{i}}{1-p_{i}}\right) =w^{T} x_{i} \ \Longleftrightarrow \ p_
 Logits function
 </p>
 
-The algorithm then tries to find the MLE (or MAP if a regularization term is added) of the mean of the response variables, by acting on _w_, assuming i.i.d. samples. Unlike ordinary least squares the optimization problem does not have a closed-form solution, but it’s instead solved through numerical methods.
+El algoritmo busca estimar la **Máxima Verosimilitud (Maximum Likelihood Estimation, MLE)** —o la **Máxima Probabilidad a Posteriori (MAP)** cuando se incorpora un término de regularización— de la media de las variables respuesta, ajustando los parámetros \(w\) y asumiendo que las muestras son **independientes e idénticamente distribuidas (i.i.d.)**. A diferencia de la regresión por mínimos cuadrados ordinarios, este problema de optimización no posee una solución en forma cerrada, por lo que se resuelve mediante métodos numéricos iterativos.
 
 $$ \underset{w}{\max} \ \\prod ^{n_{i}} \ p_{i}( x_{i} |w)^{y_{i}} \ *\ ( 1-p_{i}( x_{i} |w))^{1-y_{i}} $$
 
-A **_regularization term_** is often added to prevent the coefficients to reach a too high value which would overfit the training data. The hyperparameter $C$ is applied on the new penalty term and inversely regulates the strength of the regularization in the objective function.
+Con frecuencia se incorpora un **término de regularización** para evitar que los coeficientes alcancen valores excesivamente grandes, lo que podría provocar **sobreajuste (_overfitting_)** sobre los datos de entrenamiento. El hiperparámetro \(C\) actúa sobre este término de penalización y controla de manera **inversa** la intensidad de la regularización en la función objetivo: valores pequeños de \(C\) implican una regularización más fuerte, mientras que valores grandes reducen su efecto.
 
 ```python
 # C values tuned:
@@ -677,17 +705,21 @@ params = {'C': [0.0001, 0.001, 0.01, 0.1, 1, 10]}
 #Data prepocessing: PCA+SMOTE
 ```
 
-As a result, the output of a Logistic Regression model is the probability of the input sample to be of class 1, hence a confidence measure is also returned when predictions are performed. On top of this, the coefficients returned by the algorithm may give interpretable insights on what attributes are contributing the most to a higher output value, and viceversa.
+Como resultado, un modelo de **Regresión Logística** produce como salida la **probabilidad** de que una observación pertenezca a la clase positiva (clase 1), proporcionando además una medida de confianza para cada predicción. Asimismo, los coeficientes estimados por el modelo permiten interpretar qué variables contribuyen en mayor medida a aumentar o disminuir la probabilidad de pertenecer a la clase positiva.
 
-### Decision Tree
+### Árbol de Decisión
 
-Decision Trees are the most intuitive and interpretable machine learning model, which predict the target label by learning simple decision rules inferred from the data. At each step, a Decision Tree picks the feature that best divides the space into different labels, by means of the GINI impurity measure: <br><br>
+Los **Árboles de Decisión** son uno de los modelos de aprendizaje automático más intuitivos e interpretables. Su objetivo es predecir la variable objetivo aprendiendo reglas de decisión simples inferidas a partir de los datos.
+
+En cada división, el árbol selecciona la característica que mejor separa las observaciones entre las distintas clases utilizando la **impureza de Gini (_Gini Impurity_)**: <br><br>
 
 $$ GINI(t) =\sum_{i=1}^{C} p_{t}(k)(1-p_{t}(k)) = 1-\sum_{i=1}^{C} p_{t}(k)^{2} $$
 
-where $p_{t}(k)$ is the frequency of class $k$ appearing in node $t$, with $C$ the total number of classes. The lower the measure, the less impure the node is.
+donde \(p_t(k)\) representa la frecuencia de la clase \(k\) en el nodo \(t\), y \(C\) es el número total de clases. Cuanto menor sea el valor de esta medida, menor será la impureza del nodo y, por tanto, más homogéneas serán las observaciones que contiene.
 
-A full tree is then constructed on the training data and will be used at classification time for predicting the target label. To avoid overfitting, decision trees are often pruned before reaching their full growth, and predictions are made according to a majority vote on the samples of each leaf. Note how trees cannot handle missing values, but do not suffer from feature scaling since each attribute is treated independently.
+A partir de los datos de entrenamiento se construye un árbol completo, que posteriormente se utiliza para clasificar nuevas observaciones. Sin embargo, para evitar el **sobreajuste (_overfitting_)**, es habitual **podar (_prune_)** el árbol antes de que alcance su crecimiento máximo. La predicción final se realiza mediante **votación mayoritaria** entre las observaciones contenidas en cada nodo hoja.
+
+Cabe destacar que los árboles de decisión **no pueden manejar valores faltantes de forma nativa**, aunque presentan la ventaja de ser **insensibles al escalado de las variables**, ya que cada característica se evalúa de manera independiente durante el proceso de partición.
 
 ```python
 # Best configuration found 
@@ -723,34 +755,40 @@ Finally, tree-based model can be used as an alternative method for feature selec
 <p align = "center">
 Feature importance computed by the random forest on each of the attributes</p>
 
-### SVM
+### Máquina de Vectores de Soporte (Support Vector Machine, SVM)
 
-Support vector machine (SVM) is a parametric linear classification algorithm that aims at separating two classes through a hyperplane in the data dimension. Once the hyperplane has been set, the prediction rule is simply based on whether the test point lays on one side or the other one of it. If more than one hyperplanes fit the purpose, the one with the higher margin (distance) between support vector (the closest points to the hyperplane, one for each class) is selected.
+La **Máquina de Vectores de Soporte (Support Vector Machine, SVM)** es un algoritmo paramétrico de clasificación lineal cuyo objetivo es separar dos clases mediante un **hiperplano** en el espacio de características. Una vez definido dicho hiperplano, la clasificación de nuevas observaciones consiste simplemente en determinar en cuál de sus lados se encuentra cada punto.
+
+Cuando existen varios hiperplanos capaces de separar correctamente las clases, el algoritmo selecciona aquel que **maximiza el margen**, es decir, la distancia entre el hiperplano y los puntos de entrenamiento más cercanos de cada clase.
+
+Los puntos que se encuentran sobre los márgenes reciben el nombre de **vectores de soporte (_support vectors_)**, ya que son los que determinan completamente la posición del hiperplano óptimo.
 
 <p align = "center">
 <img height="300" src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/SVM_margin.png/800px-SVM_margin.png">
 </p>
 <p align = "center">
-Maximum-margin hyperplane and margins for an SVM trained with samples from two classes.  
-Samples on the margin are called the support vectors.</p>
 
-More formally, it tries to define $\vec{w} ,b$ s.t. the hyperplane $w^{T}x+b=0$ is the “maximum-margin hyperplane”, i.e. such that the distance between the hyperplane and the nearest point $\overrightarrow{x_{i}}$ from either group is maximized. If we impose that all points must satisfy $|w^{T}x+b|\\geqslant1$ relatively to their label, then the optimization problem becomes equivalent to finding the smallest $\|w\|$:
+**Hiperplano de máximo margen** y sus márgenes para una SVM entrenada con muestras de dos clases. Las observaciones ubicadas sobre los márgenes reciben el nombre de **vectores de soporte (_support vectors_)**.
 
-#### Primal Optimization Problem (Hard Margin) 
+De manera más formal, el algoritmo busca encontrar los parámetros \(\vec{w}\) y \(b\) de forma que el hiperplano $w^{T}x+b=0$ sea el **hiperplano de máximo margen**, es decir, aquel que maximiza la distancia entre el hiperplano y la observación más cercana \(\overrightarrow{x_i}\) de cualquiera de las dos clases.
+
+Si se impone que todas las observaciones satisfagan la restricción $|w^{T}x+b|\geq1$ de acuerdo con su etiqueta de clase, entonces el problema de optimización puede reformularse como la búsqueda del vector de pesos con la **menor norma euclídea** posible, es decir, encontrar el menor valor de $\|w\|$:
+
+#### Problema de Optimización Primal (Hard Margin)
 
 $$ \underset{w,b}{min} \tfrac{1}{2}\Vert w\Vert ^{2} \\ \\\ s.t.\ y_{i}\left( w^{T} x_{i} +b\right) \geqslant 1,\ \forall i $$
 
-The decision function on a binary label $\{-1,1\}$ is then applied as $x\mapsto sign\left( w^{T} x+b\right)$. Geometrically, the best hyperplane is completely determined by the points $\overrightarrow{x_{i}}$ the lie right on the boundary of the margin $|w^{T}x_{i}+b|=1$. These points are called **_support vectors_**.
+La función de decisión para un problema de clasificación binaria con etiquetas \(\{-1,1\}\) se define como: $x \mapsto \operatorname{sign}\left(w^{T}x+b\right)$. Desde una perspectiva geométrica, el **hiperplano óptimo** queda completamente determinado por las observaciones \(\overrightarrow{x_i}\) que se encuentran exactamente sobre los límites del margen, es decir, aquellas que satisfacen: $|w^{T}x_i+b|=1$. Estas observaciones reciben el nombre de **vectores de soporte (_support vectors_)**, ya que son las únicas que determinan la posición del hiperplano de separación.
 
-This model is referred to as **Hard-margin SVM**, where data is supposed to be linearly separable otherwise no feasible solution would be found.  
+Este modelo se conoce como **SVM de margen duro (_Hard-margin SVM_)**, en el cual se asume que las clases son **linealmente separables**. Si esta condición no se cumple, el problema de optimización no tiene una solución factible.
 
-To extend the model on classes that are not perfectly separable by means of a hyperplane, the hinge loss function is introduced, which penalizes points falling in between the margin:
+Para extender el modelo a situaciones donde las clases no pueden separarse perfectamente mediante un hiperplano, se introduce la **función de pérdida Hinge (_Hinge Loss_)**, la cual penaliza las observaciones que quedan dentro del margen de separación:
 
 $$ L_{hinge} := \max\left( 0, 1-y_{i}\left( w^{T} x_{i} +b\right)\right) $$
 
-The previous opt. problem is then generalized to the **soft margin** version, which is equivalent to the ERM of the hinge loss with an L2 regularization term:
+A partir de esta función de pérdida, el problema de optimización anterior se generaliza al caso de **margen suave (_Soft-margin SVM_)**, que puede interpretarse como un problema de **Minimización del Riesgo Empírico (Empirical Risk Minimization, ERM)** utilizando la pérdida *Hinge* junto con un término de **regularización L2**.
 
-#### Primal Optimization Problem (Soft Margin)
+#### Problema de Optimización Primal (Soft Margin)
 
 $$ \\underset{w,b,\xi}{min} \ \ \\tfrac{1}{2}\\Vert w\\Vert ^{2} \ +C\\sum_{i}^{n} \\xi_{i} $$
 
